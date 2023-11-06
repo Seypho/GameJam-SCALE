@@ -7,26 +7,48 @@ public class S1PlayerMovement : MonoBehaviour
 {
 
     Rigidbody2D rb;
-    [SerializeField] float moveSpeed = 5f;
-    Vector2 rawMovementVector;
+    [SerializeField] float moveDistance = 5f;
+    Vector2 minBounds;
+    Vector2 maxBounds;
+    [SerializeField] float paddingLeft = 1f;
+    [SerializeField] float paddingRight = 1f;
+    [SerializeField] float paddingTop = 1f;
+    [SerializeField] float paddingBottom = 1f;
+
+    Vector3 rawInput;
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
+        InitBounds();
     }
 
     void Update()
     {
-        Move();
+
     }
 
-    void OnMove(InputValue value)
+    void InitBounds()
     {
-        rawMovementVector = value.Get<Vector2>();
+        Camera mainCamera = Camera.main;
+        minBounds = mainCamera.ViewportToWorldPoint(new Vector2(0, 0));
+        maxBounds = mainCamera.ViewportToWorldPoint(new Vector2(1, 1));
     }
 
     void Move()
     {
-        Vector2 delta = rawMovementVector * moveSpeed * Time.deltaTime;
-        rb.velocity = delta;
+        
+    }
+    void OnMove(InputValue value)
+    {
+        rawInput = value.Get<Vector2>();
+        if (Mathf.Abs(rawInput.x) == 1 || Mathf.Abs(rawInput.y) == 1)
+        {
+            Vector3 newPos = new Vector2();
+            Vector2 delta = rawInput * moveDistance;
+            newPos.x = Mathf.Clamp(transform.position.x + delta.x, minBounds.x + paddingLeft, maxBounds.x - paddingRight);
+            newPos.y = Mathf.Clamp(transform.position.y + delta.y, minBounds.y + paddingBottom, maxBounds.y - paddingTop);
+
+            Debug.Log(newPos);
+            transform.position = newPos;
+        }
     }
 }
